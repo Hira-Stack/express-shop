@@ -1,0 +1,17 @@
+{
+    "products": [
+        {
+            "id": "2",
+            "title": "Algorithms (4th Edition)",
+            "price": "72.09",
+            "quantity": 1
+        },
+        {
+            "id": "25",
+            "title": "Atomic Habits",
+            "price": "13.79",
+            "quantity": 2
+        }
+    ],
+    "totalPrice": 99.67
+}

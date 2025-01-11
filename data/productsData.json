@@ -1,0 +1,37 @@
+[
+    {
+        "id": "16",
+        "title": "To Kill a Mockingbird",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/220px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
+        "price": "45.99",
+        "description": "To Kill a Mockingbird is a novel by the American author Harper Lee. It was published in July 1960 and became instantly successful."
+    },
+    {
+        "id": "76",
+        "title": "Simple Trading Book",
+        "imageUrl": "https://skybooks.ir/images/productImages/Simple-Trading-Book_D61689686636.jpg",
+        "price": "44",
+        "description": "A Comprehensive Guide to Profiting from the Global Currency Markets is a comprehensive guide to understanding and profiting from the foreign exchange (forex) market."
+    },
+    {
+        "id": "68",
+        "title": "Then She Was Gone: A Novel",
+        "imageUrl": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSiMI7K4-cC09L34lRV3Hr6L0GO-wu0KSDgeBsnxCzD4xenMdTW",
+        "price": "13.99",
+        "description": "She was fifteen, her mother's golden girl. She had her whole life ahead of her. And then, in the blink of an eye, Ellie was gone."
+    },
+    {
+        "id": "25",
+        "title": "Atomic Habits",
+        "imageUrl": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTLnsvHfPHw8HXmsYGwbNCyYPgszreWfBblCSMHKVXm50NTe-Ha",
+        "price": "13.79",
+        "description": "Packed with evidence-based strategies, Atomic Habits will teach you how to make small changes that will transform your habits and deliver amazing results."
+    },
+    {
+        "id": "2",
+        "title": "Algorithms (4th Edition)",
+        "imageUrl": "https://algs4.cs.princeton.edu/cover.png",
+        "price": "72.09",
+        "description": "The textbook Algorithms, 4th Edition by Robert Sedgewick and Kevin Wayne surveys the most important algorithms and data structures in use today."
+    }
+]

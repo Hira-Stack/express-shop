@@ -1,0 +1,25 @@
+{
+    "name": "express-project",
+    "version": "1.0.0",
+    "description": "Build an Express sample project.",
+    "main": "app.js",
+    "type": "module",
+    "scripts": {
+        "nodemon": "nodemon app.js"
+    },
+    "keywords": [],
+    "author": "Hira-Stack",
+    "license": "ISC",
+    "dependencies": {
+        "body-parser": "^1.20.3",
+        "ejs": "^3.1.10",
+        "express": "^4.21.1",
+        "express-handlebars": "^8.0.1",
+        "mysql2": "^3.11.5",
+        "pug": "^3.0.3",
+        "sequelize": "^6.37.5"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.7"
+    }
+}
