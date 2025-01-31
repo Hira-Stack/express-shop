@@ -1,9 +1,11 @@
+// import User from "../models/user.js";
 import Product from "../models/product.js";
+import Cart from "../models/cart.js";
 import Order from "../models/order.js";
 
 // Access to "shop" page using "GET" method
 export const getShopIndex = (req, res, next) => {
-    Product.findAll()
+    Product.fetchAll()
         .then((products) => {
             res.render("./shop/index", {
                 products: products,
@@ -16,7 +18,7 @@ export const getShopIndex = (req, res, next) => {
 
 // Access to "products" page using "GET" method
 export const getProducts = (req, res, next) => {
-    Product.findAll()
+    Product.fetchAll()
         .then((products) => {
             res.render("./shop/product-list", {
                 products: products,
@@ -31,7 +33,7 @@ export const getProducts = (req, res, next) => {
 export const getSingleProduct = (req, res, next) => {
     const productID = req.params.productID;
 
-    Product.findByPk(productID)
+    Product.findById(productID)
         .then((product) => {
             res.render("./shop/product-detail", {
                 product: product,
@@ -45,59 +47,30 @@ export const getSingleProduct = (req, res, next) => {
 
 // Access to "cart" page using "GET" method
 export const getCart = (req, res, next) => {
-    req.user
-        .getCart()
-        .then((cart) => {
-            return cart
-                .getProducts()
-                .then((products) => {
-                    res.render("./shop/cart", {
-                        pageTitle: "Your Cart",
-                        path: "/cart",
-                        products: products,
-                        totalPrice: cart.totalPrice
-                    });
-                })
-                .catch((err) => console.error(err));
-        })
-        .catch((err) => console.error(err));
+    const cart = req.user.cart;
+
+    res.render("./shop/cart", {
+        pageTitle: "Your Cart",
+        path: "/cart",
+        products: cart.items,
+        totalPrice: cart.totalPrice
+    });
 };
 
 // Access to "cart" page using "POST" method
 export const postCart = (req, res, next) => {
+    const userID = req.user._id.toString();
     const productID = req.body.productID;
-    let fetchedCart;
-    let newQuantity = 1;
+    let fetchedCart = req.user.cart;
+    const userCart = new Cart(fetchedCart.items);
 
-    req.user
-        .getCart()
+    userCart
+        .addProduct(productID)
         .then((cart) => {
-            fetchedCart = cart;
-            return cart.getProducts({ where: { id: productID } });
+            return cart.updateByUserId(userID);
         })
-        .then((products) => {
-            let product;
-            if (products.length > 0) {
-                product = products[0];
-            }
-
-            if (product) {
-                const oldQuantity = product["Cart-Item"].quantity;
-                newQuantity = oldQuantity + 1;
-                return product;
-            }
-            return Product.findByPk(productID);
-        })
-        .then((product) => {
-            const productPrice = product.price;
-            fetchedCart.totalPrice += productPrice;
-            fetchedCart.totalPrice = fetchedCart.totalPrice.toFixed(2);
-            return fetchedCart.addProduct(product, {
-                through: { quantity: newQuantity }
-            });
-        })
-        .then((data) => {
-            fetchedCart.save();
+        .then((result) => {
+            console.log(result);
             res.redirect("/cart");
         })
         .catch((err) => console.error(err));
@@ -106,33 +79,28 @@ export const postCart = (req, res, next) => {
 // Access to "cart-delete-product" page using "POST" method
 export const postCartDeleteProduct = (req, res, next) => {
     const productID = req.body.productID;
-    // let fetchedCart;
+    const userID = req.user._id.toString();
+    const fetchedCart = req.user.cart;
 
-    req.user
-        .getCart()
-        .then((cart) => {
-            return cart.getProducts({ where: { id: productID } });
-        })
-        .then((products) => {
-            let product = products[0];
-            return product["Cart-Item"].destroy();
-        })
+    const cart = new Cart(fetchedCart.items);
+    cart.deleteItem(productID)
+        .updateByUserId(userID)
         .then((result) => {
-            console.log(
-                `Product item with ID: ${result.productId} removed from cart successfully.`
-            );
+            console.log(result);
             res.redirect("/cart");
         })
         .catch((err) => console.error(err));
 };
 
-// Access to "oerders" page using "GET" method
+// Access to "orders" page using "GET" method
 export const getOrders = (req, res, next) => {
-    req.user
-        .getOrders({ include: ["Products"] })
+    const userID = req.user._id.toString();
+
+    Order.findByUserId(userID)
         .then((orders) => {
+            console.log(orders);
             res.render("./shop/orders", {
-                pageTitle: "Your Oreders",
+                pageTitle: "Your Orders",
                 path: "/orders",
                 orders: orders
             });
@@ -142,42 +110,23 @@ export const getOrders = (req, res, next) => {
 
 // Access to "create-oerder" page using "POST" method
 export const postOrder = (req, res, next) => {
-    let fetchedCart;
-    let cartProducts;
-    let cartTotalPrice = 0;
+    const userID = req.user._id;
+    const userCart = req.user.cart;
 
-    req.user
-        .getCart()
-        .then((cart) => {
-            fetchedCart = cart;
-            cartTotalPrice = cart.totalPrice;
-            return cart.getProducts();
-        })
-        .then((products) => {
-            cartProducts = products;
-            return req.user.createOrder();
-        })
-        .then(async (order) => {
-            order.totalPrice = cartTotalPrice;
-            await order.save();
+    const order = new Order(userID, userCart.items, userCart.totalPrice);
 
-            return order.addProducts(
-                cartProducts.map((product) => {
-                    product["Order-Item"] = {
-                        quantity: product["Cart-Item"].quantity
-                    };
-                    return product;
-                })
-            );
-        })
-        .then((products) => {
-            return fetchedCart.setProducts(null);
+    order
+        .save()
+        .then((result) => {
+            const emptyCart = new Cart();
+            const userID = req.user._id.toString();
+            return emptyCart.updateByUserId(userID);
         })
         .then((result) => {
-            // fetchedCart = null;
+            console.log(result);
             res.redirect("/orders");
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.error(err));
 };
 
 // Access to "checkout" page using "GET" method

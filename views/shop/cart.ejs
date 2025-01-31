@@ -6,11 +6,11 @@
         <main>
             <% if(products.length !== 0) { %>
                 <ul>
-                    <% for(let product of products) { %>
-                        <li>Product Title: <%= product.title %> (Quantity: <%= product["Cart-Item"].quantity %>)</li>
-                        <li>Product Price: $<%= (product.price * product["Cart-Item"].quantity).toFixed(2) %></li>
+                    <% for(let item of products) { %>
+                        <li>item Title: <%= item.title %> (Quantity: <%= item.quantity %>)</li>
+                        <li>item Price: $<%= (item.price * item.quantity).toFixed(2) %></li>
                         <form action="/cart-delete-product" method="post">
-                            <input type="hidden" name="productID" value="<%= product.id %>">
+                            <input type="hidden" name="productID" value="<%= item.productId %>">
                             <button type="submit" class="btn">Delete Item</button>
                         </form>
                         <br /><br />

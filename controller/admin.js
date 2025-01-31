@@ -1,4 +1,5 @@
 import Product from "../models/product.js";
+// import User from "../models/user.js";
 
 // Access to "Add Product" page using "GET" method and "/admin/add-product" url
 export const getAddProduct = (req, res, next) => {
@@ -13,19 +14,19 @@ export const getAddProduct = (req, res, next) => {
 export const postAddProduct = (req, res, next) => {
     const title = req.body.title;
     const imageUrl = req.body.imageUrl;
-    const price = req.body.price;
+    const price = +req.body.price;
     const description = req.body.description;
+    const userId = req.user._id;
 
-    req.user
-        .createProduct({
-            title: title,
-            imageUrl: imageUrl,
-            price: price,
-            description: description,
-            userId: req.user.id
-        })
+    const newProduct = new Product(title, imageUrl, price, description, userId);
+    newProduct
+        .save()
         .then((result) => {
-            console.log(`Product with title: "${title}" created successfully.`);
+            console.log(
+                `New product Product created successfully.\n` +
+                    `Product ID: ${result.insertedId}\n` +
+                    `Title: ${title}`
+            );
             res.redirect("/admin/products");
         })
         .catch((err) => console.error(err));
@@ -39,10 +40,8 @@ export const getEditProduct = (req, res, next) => {
     }
 
     const productID = req.params.productID;
-    req.user
-        .getProducts({ where: { id: productID } })
-        .then((products) => {
-            const product = products[0];
+    Product.findById(productID)
+        .then((product) => {
             if (!product) {
                 return res.redirect("/");
             }
@@ -53,9 +52,7 @@ export const getEditProduct = (req, res, next) => {
                 product: product
             });
         })
-        .catch((err) => {
-            console.error(err);
-        });
+        .catch((err) => console.error(err));
 };
 
 // Access to "Edit Product" page using "POST" method and "/admin/edit-product" url
@@ -66,17 +63,15 @@ export const postEditProduct = (req, res, next) => {
     const productPrice = req.body.price;
     const productDescription = req.body.description;
 
-    Product.update(
-        {
-            title: productTitle,
-            imageUrl: productImageURL,
-            price: productPrice,
-            description: productDescription
-        },
-        {
-            where: { id: productID }
-        }
-    )
+    const updatedProduct = new Product(
+        productTitle,
+        productImageURL,
+        productPrice,
+        productDescription
+    );
+
+    updatedProduct
+        .save(true, productID)
         .then((result) => {
             res.redirect("/admin/products");
         })
@@ -87,26 +82,19 @@ export const postEditProduct = (req, res, next) => {
 export const postDeleteProduct = (req, res, next) => {
     const productID = req.body.productID;
 
-    Product.destroy({
-        where: {
-            id: productID
-        }
-    })
+    Product.deleteById(productID)
         .then((result) => {
             console.log(
                 `Product with ID: "${productID}" deleted successfully.`
             );
             res.redirect("/admin/products");
         })
-        .catch((err) => {
-            console.error(err);
-        });
+        .catch((err) => console.error(err));
 };
 
 // Access to "products" page using "GET" method and "/admin/products" url
 export const getAdminProducts = (req, res, next) => {
-    req.user
-        .getProducts()
+    Product.fetchAll()
         .then((products) => {
             res.render("./admin/products", {
                 products: products,
@@ -114,5 +102,5 @@ export const getAdminProducts = (req, res, next) => {
                 path: "/admin/products"
             });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.error(err));
 };

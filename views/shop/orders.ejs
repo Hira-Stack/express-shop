@@ -8,9 +8,9 @@
             <% if(orders.length > 0) { %>
                 <ul>
                     <% orders.forEach((order) => { %>
-                        <h2>Order ID: <%= order.id %></h2>
-                        <% order.Products.forEach((product) => { %>
-                            <li><%= product.title %> (<%= product["Order-Item"].quantity %>)</li>
+                        <h2>Order ID: <%= order._id %></h2>
+                        <% order.items.forEach((item) => { %>
+                            <li><%= item.title %> (<%= item.quantity %>)</li>
                         <% }); %>
                     <% }) %>
                 </ul>
