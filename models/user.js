@@ -64,4 +64,10 @@ userSchema.methods.deleteCartItem = function (productId) {
     return this;
 };
 
+userSchema.methods.clearCart = function () {
+    const emptyCart = { items: [], totalPrice: 0 };
+    this.cart = { ...emptyCart };
+    return this.save();
+};
+
 export default model("User", userSchema);

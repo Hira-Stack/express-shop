@@ -151,13 +151,13 @@ export const postOrder = (req, res, next) => {
     order
         .save()
         .then((savedOrder) => {
-            console.log(savedOrder);
-            const emptyCart = { items: [], totalPrice: 0.0 };
-            req.user.cart = { ...emptyCart };
-            return req.user.save();
+            console.log(
+                `Order with order id: ${savedOrder._id} created for you.`
+            );
+            return req.user.clearCart();
         })
         .then((savedUser) => {
-            console.log(savedUser);
+            console.log(`The cart of user (user's id: ${savedUser._id}) cleared.`);
             res.redirect("/orders");
         })
         .catch((err) => console.error(err));
