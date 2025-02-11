@@ -1,9 +1,8 @@
 import path from "path";
 
 import express from "express";
+import mongoose from "mongoose";
 import "dotenv/config.js";
-
-import { clientConnect } from "./util/database.js";
 
 /** The "body-parser" package there is with Express by default,
  * but add it as third-party package is best practice.
@@ -20,8 +19,6 @@ const app = express();
 
 // Models
 import User from "./models/user.js";
-import Cart from "./models/cart.js";
-import Product from "./models/product.js";
 
 // Set View Engin to "EJS" (Template Engine)
 app.set("view engine", "ejs");
@@ -32,13 +29,13 @@ app.use(express.static(path.join(rootDir, "public")));
 
 // Use a middleware to store user???
 app.use((req, res, next) => {
-    User.findById("678ea8d529a83f98c8f654fd")
+    User.findById("67a5d98405845b1775019e4c")
         .then((user) => {
             if (!user) {
-                const username = "Hamidreza";
-                const userEmail = "Hira.stack@gmail.com";
-                const userCart = new Cart();
-                user = new User(username, userEmail, userCart);
+                const name = "Hamidreza";
+                const email = "Hira.stack@gmail.com";
+                const cart = { items: [], totalPrice: 0.0 };
+                user = new User({ name, email, cart });
                 user.save();
             }
             req.user = user;
@@ -54,8 +51,9 @@ app.use(shopRoutes);
 // Handle 404 Error
 app.use(get404);
 
-clientConnect((client) => {})
+mongoose
+    .connect(process.env.DB_URI)
     .then((result) => {
-        app.listen(8080);
+        app.listen(process.env.PORT || 3000);
     })
     .catch((err) => console.error(err));

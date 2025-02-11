@@ -1,58 +1,67 @@
-import { ObjectId } from "mongodb";
+import { Schema, model } from "mongoose";
 
-import { getDb } from "../util/database.js";
-
-class User {
-    constructor(username, email, cart) {
-        this.name = username;
-        this.email = email;
-        this.cart = cart;
-    }
-
-    save(editMode = false, updatedId = -1) {
-        const db = getDb();
-        const usersCollection = db.collection("users");
-
-        if (editMode) {
-            return usersCollection
-                .updateOne(
-                    { _id: ObjectId.createFromHexString(updatedId) },
-                    {
-                        $set: {
-                            name: this.name,
-                            email: this.email,
-                            cart: this.cart
-                        }
-                    }
-                )
-                .catch((err) => {
-                    throw new Error(err);
-                });
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    cart: {
+        items: [
+            {
+                product: {
+                    type: Schema.Types.ObjectId,
+                    ref: "Product"
+                },
+                quantity: {
+                    type: Number,
+                    required: true
+                }
+            }
+        ],
+        totalPrice: {
+            type: Number,
+            required: true
         }
-        return usersCollection.insertOne(this);
     }
+});
 
-    static findById(id) {
-        const db = getDb();
-        const usersCollection = db.collection("users");
-        return usersCollection
-            .findOne({ _id: ObjectId.createFromHexString(id) })
-            .then((user) => user)
-            .catch((err) => {
-                throw new Error(err);
-            });
+// *** User Schema Methods ***
+/**
+ * Add new product item to user's cart
+ * @param {string} productId The ID of the product to be added to the cart.
+ * @returns {User} This user after new product is added to own cart .
+ */
+userSchema.methods.addToCart = function (productId) {
+    const itemIndex = this.cart.items.findIndex(
+        (item) => item.product.toString() === productId
+    );
+
+    let cartItems = this.cart.items;
+    if (itemIndex !== -1) {
+        cartItems[itemIndex].quantity += 1;
+    } else {
+        cartItems.push({ product: productId, quantity: 1 });
     }
+    this.cart.items = cartItems;
+    return this;
+};
 
-    static getCartByUserId(userId) {
-        const db = getDb();
-        const usersCollection = db.collection("users");
-        return usersCollection
-            .findOne({ _id: ObjectId.createFromHexString(userId) })
-            .then((user) => user.cart)
-            .catch((err) => {
-                throw new Error(err);
-            });
-    }
-}
+/**
+ * Delete a product item from user's cart
+ * @param {string} productId The ID of the product to be deleted from the cart.
+ * @returns {User} This user after delete a cart item.
+ */
+userSchema.methods.deleteCartItem = function (productId) {
+    const updatedCartItems = this.cart.items.filter(
+        (item) => item.product.toString() !== productId
+    );
+    this.cart.items = [...updatedCartItems];
 
-export default User;
+    return this;
+};
+
+export default model("User", userSchema);

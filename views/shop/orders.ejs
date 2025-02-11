@@ -10,8 +10,9 @@
                     <% orders.forEach((order) => { %>
                         <h2>Order ID: <%= order._id %></h2>
                         <% order.items.forEach((item) => { %>
-                            <li><%= item.title %> (<%= item.quantity %>)</li>
+                            <li><%= item.product.title %> (<%= item.quantity %>)</li>
                         <% }); %>
+                        <p>Oreder total price: <%= order.totalPrice %></p>
                     <% }) %>
                 </ul>
             <% } else { %>

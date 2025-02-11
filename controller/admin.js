@@ -16,16 +16,22 @@ export const postAddProduct = (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = +req.body.price;
     const description = req.body.description;
-    const userId = req.user._id;
+    const userId = req.user;
 
-    const newProduct = new Product(title, imageUrl, price, description, userId);
+    const newProduct = new Product({
+        title,
+        imageUrl,
+        price,
+        description,
+        userId
+    });
     newProduct
         .save()
-        .then((result) => {
+        .then((savedProduct) => {
             console.log(
-                `New product Product created successfully.\n` +
-                    `Product ID: ${result.insertedId}\n` +
-                    `Title: ${title}`
+                `New product created successfully.\n` +
+                    `Product ID: ${savedProduct._id}\n` +
+                    `Title: ${savedProduct.title}`
             );
             res.redirect("/admin/products");
         })
@@ -58,21 +64,21 @@ export const getEditProduct = (req, res, next) => {
 // Access to "Edit Product" page using "POST" method and "/admin/edit-product" url
 export const postEditProduct = (req, res, next) => {
     const productID = req.body.productID;
-    const productTitle = req.body.title;
-    const productImageURL = req.body.imageUrl;
-    const productPrice = req.body.price;
-    const productDescription = req.body.description;
+    const title = req.body.title;
+    const imageUrl = req.body.imageUrl;
+    const price = req.body.price;
+    const description = req.body.description;
 
-    const updatedProduct = new Product(
-        productTitle,
-        productImageURL,
-        productPrice,
-        productDescription
-    );
-
-    updatedProduct
-        .save(true, productID)
+    Product.findByIdAndUpdate(productID, {
+        title,
+        imageUrl,
+        price,
+        description
+    })
         .then((result) => {
+            console.log(
+                `Product with ID: "${result._id}" updated successfully.`
+            );
             res.redirect("/admin/products");
         })
         .catch((err) => console.error(err));
@@ -82,11 +88,8 @@ export const postEditProduct = (req, res, next) => {
 export const postDeleteProduct = (req, res, next) => {
     const productID = req.body.productID;
 
-    Product.deleteById(productID)
+    Product.findByIdAndDelete(productID)
         .then((result) => {
-            console.log(
-                `Product with ID: "${productID}" deleted successfully.`
-            );
             res.redirect("/admin/products");
         })
         .catch((err) => console.error(err));
@@ -94,7 +97,7 @@ export const postDeleteProduct = (req, res, next) => {
 
 // Access to "products" page using "GET" method and "/admin/products" url
 export const getAdminProducts = (req, res, next) => {
-    Product.fetchAll()
+    Product.find()
         .then((products) => {
             res.render("./admin/products", {
                 products: products,

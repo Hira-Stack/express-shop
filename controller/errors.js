@@ -7,7 +7,4 @@ export const get404 = (req, res, next) => {
     });
 };
 
-// Implement some another error handling
-// export const someOtherErrorHandler = () => {};
-
 
