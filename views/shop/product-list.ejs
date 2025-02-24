@@ -29,7 +29,9 @@
                                     <form action="/products/<%= product._id %>" method="get">
                                         <button class="btn" type="submit">Details</button>
                                     </form>
+                                    <% if(isAuthenticated) { %>
                                     <%- include("../includes/add-to-cart.ejs", {product: product}) %>
+                                    <% } %>
                                 </div>
                             </article>
                         <% } %>

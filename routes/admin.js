@@ -1,8 +1,8 @@
-import express from "express";
+import { Router } from "express";
 
 import * as adminController from "../controller/admin.js";
 
-const router = express.Router();
+const router = Router();
 
 // URL: "/admin/add-product" => GET
 router.get("/add-product", adminController.getAddProduct);

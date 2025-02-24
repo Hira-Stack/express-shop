@@ -6,6 +6,3 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const rootDir = path.join(__dirname, "..");
 // export default rootDir;
-
-// export const productsStoragePath = path.join(rootDir, "data", "productsData.json");
-export const cartStoragePath = path.join(rootDir, "data", "cartData.json");

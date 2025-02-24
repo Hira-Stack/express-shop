@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Product from "../models/product.js";
 import Order from "../models/order.js";
+import { isLoggedIn } from "../util/auth.js";
 
 // Access to "shop" page using "GET" method
 export const getShopIndex = (req, res, next) => {
@@ -9,7 +10,8 @@ export const getShopIndex = (req, res, next) => {
             res.render("./shop/index", {
                 products: products,
                 pageTitle: "Shop",
-                path: "/"
+                path: "/",
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -22,7 +24,8 @@ export const getProducts = (req, res, next) => {
             res.render("./shop/product-list", {
                 products: products,
                 pageTitle: "All Products",
-                path: "/products"
+                path: "/products",
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -38,7 +41,8 @@ export const getSingleProduct = (req, res, next) => {
                 product: product,
                 pageTitle:
                     product !== null ? product.title : "Product Not Found",
-                path: "/products"
+                path: "/products",
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -53,7 +57,8 @@ export const getCart = (req, res, next) => {
                 pageTitle: "Your Cart",
                 path: "/cart",
                 products: user.cart.items,
-                totalPrice: user.cart.totalPrice
+                totalPrice: user.cart.totalPrice,
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -61,7 +66,7 @@ export const getCart = (req, res, next) => {
 
 // Access to "cart" page using "POST" method
 export const postCart = (req, res, next) => {
-    const userID = req.user._id.toString();
+    const userID = req.user._id;
     const productID = req.body.productID;
 
     User.findById(userID)
@@ -131,7 +136,8 @@ export const getOrders = (req, res, next) => {
             res.render("./shop/orders", {
                 pageTitle: "Your Orders",
                 path: "/orders",
-                orders: orders
+                orders: orders,
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -157,7 +163,9 @@ export const postOrder = (req, res, next) => {
             return req.user.clearCart();
         })
         .then((savedUser) => {
-            console.log(`The cart of user (user's id: ${savedUser._id}) cleared.`);
+            console.log(
+                `The cart of user (user's id: ${savedUser._id}) cleared.`
+            );
             res.redirect("/orders");
         })
         .catch((err) => console.error(err));

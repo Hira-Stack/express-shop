@@ -1,12 +1,13 @@
 import Product from "../models/product.js";
-// import User from "../models/user.js";
+import { isLoggedIn } from "../util/auth.js";
 
 // Access to "Add Product" page using "GET" method and "/admin/add-product" url
 export const getAddProduct = (req, res, next) => {
     res.render("./admin/edit-product", {
         pageTitle: "Add Product",
         path: "/admin/add-product",
-        editing: false
+        editing: false,
+        isAuthenticated: isLoggedIn(req)
     });
 };
 
@@ -55,7 +56,8 @@ export const getEditProduct = (req, res, next) => {
                 pageTitle: `Edit Product: ${product.title}`,
                 path: "/admin/edit-product",
                 editing: editMode,
-                product: product
+                product: product,
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));
@@ -102,7 +104,8 @@ export const getAdminProducts = (req, res, next) => {
             res.render("./admin/products", {
                 products: products,
                 pageTitle: "Admin Products",
-                path: "/admin/products"
+                path: "/admin/products",
+                isAuthenticated: isLoggedIn(req)
             });
         })
         .catch((err) => console.error(err));

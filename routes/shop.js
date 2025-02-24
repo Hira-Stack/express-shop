@@ -1,8 +1,8 @@
-import express from "express";
+import { Router } from "express";
 
 import * as shopController from "../controller/shop.js";
 
-const router = express.Router();
+const router = Router();
 
 // URL: "/" => GET
 router.get("/", shopController.getShopIndex);
@@ -27,7 +27,6 @@ router.get("/orders", shopController.getOrders);
 
 // URL: "/create-order" => POST
 router.post("/create-order", shopController.postOrder);
-
 
 // URL: "/checkout" => GET
 // router.get("/checkout", shopController.getCheckout);
