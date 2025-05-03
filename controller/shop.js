@@ -1,7 +1,12 @@
+import path from "path";
+import fs from "fs";
+
+import pdfDocumnet from "pdfkit";
+
 import User from "../models/user.js";
 import Product from "../models/product.js";
 import Order from "../models/order.js";
-import { isLoggedIn } from "../util/auth.js";
+import { rootDir } from "../util/paths.js";
 
 // Access to "shop" page using "GET" method
 export const getShopIndex = (req, res, next) => {
@@ -10,8 +15,7 @@ export const getShopIndex = (req, res, next) => {
             res.render("./shop/index", {
                 products: products,
                 pageTitle: "Shop",
-                path: "/",
-                isAuthenticated: isLoggedIn(req)
+                path: "/"
             });
         })
         .catch((err) => console.error(err));
@@ -24,11 +28,15 @@ export const getProducts = (req, res, next) => {
             res.render("./shop/product-list", {
                 products: products,
                 pageTitle: "All Products",
-                path: "/products",
-                isAuthenticated: isLoggedIn(req)
+                path: "/products"
             });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 // Access to "products/:productID" page using "GET" method (By unique product ID)
@@ -41,11 +49,15 @@ export const getSingleProduct = (req, res, next) => {
                 product: product,
                 pageTitle:
                     product !== null ? product.title : "Product Not Found",
-                path: "/products",
-                isAuthenticated: isLoggedIn(req)
+                path: "/products"
             });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 // Access to "cart" page using "GET" method
@@ -57,11 +69,13 @@ export const getCart = (req, res, next) => {
                 pageTitle: "Your Cart",
                 path: "/cart",
                 products: user.cart.items,
-                totalPrice: user.cart.totalPrice,
-                isAuthenticated: isLoggedIn(req)
+                totalPrice: user.cart.totalPrice
             });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            // What is status code?
+            console.log(err);
+        });
 };
 
 // Access to "cart" page using "POST" method
@@ -97,7 +111,12 @@ export const postCart = (req, res, next) => {
             console.log(result);
             res.redirect("/cart");
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 // Access to "cart-delete-product" page using "POST" method
@@ -120,7 +139,12 @@ export const postDeleteCartItem = (req, res, next) => {
             console.log(result);
             res.redirect("/cart");
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 // Access to "orders" page using "GET" method
@@ -136,11 +160,99 @@ export const getOrders = (req, res, next) => {
             res.render("./shop/orders", {
                 pageTitle: "Your Orders",
                 path: "/orders",
-                orders: orders,
-                isAuthenticated: isLoggedIn(req)
+                orders: orders
             });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+};
+
+// Access to "orders/:orderId" page using "GET" method (To download order's invoice as a .pdf file)
+export const getOrderInvoice = (req, res, next) => {
+    const orderId = req.params.orderId;
+
+    // Check user accessibility to order's invoices
+    Order.findById(orderId)
+        .populate("user", "_id name")
+        .populate("items.product", "title")
+        .then((order) => {
+            if (!order) {
+                return next(new Error("No order found"));
+            }
+            if (order.user._id.toString() !== req.user._id.toString()) {
+                return next(
+                    new Error(
+                        "Unauthorized access: You don't have accessibility permission!"
+                    )
+                );
+            }
+            const invoiceName = `invoice_${orderId}.pdf`;
+            const invoicePath = path.join(
+                rootDir,
+                "data",
+                "invoices",
+                invoiceName
+            );
+
+            const invoicePdfDoc = new pdfDocumnet({ margin: 30 });
+            res.setHeader("Content-Type", "application/pdf");
+            res.setHeader(
+                "Content-Disposition",
+                `inline filename="${invoiceName}"`
+            );
+            invoicePdfDoc.pipe(fs.createWriteStream(invoicePath));
+            invoicePdfDoc.pipe(res);
+
+            // Create content of PDF
+            invoicePdfDoc.fontSize(20).text("Your Invoice", {
+                align: "center",
+                color: "#44546A"
+            });
+
+            invoicePdfDoc.moveDown();
+
+            // Add user information
+            invoicePdfDoc.fontSize(16).text(`Username: ${order.user.name}`, {
+                align: "left"
+            });
+            // invoicePdfDoc.text(`Date: 2025 - 04 - 12`);
+            invoicePdfDoc.moveDown();
+
+            let tableData = [];
+            const tableHeaders = ["Items", "Quantity"];
+            tableData.push(tableHeaders);
+            order.items.forEach((item) => {
+                let itemsTableData = [];
+                itemsTableData[0] = item.product.title;
+                itemsTableData[1] = item.quantity;
+                tableData.push(itemsTableData);
+            });
+
+            const orderTotalPriceData = ["Total Price", `$${order.totalPrice}`];
+            tableData.push(orderTotalPriceData);
+
+            invoicePdfDoc.table({
+                defaultStyle: { border: 1, borderColor: "gray" },
+                rowStyles: (i) => {
+                    if (i === tableData.length - 1)
+                        return {
+                            backgroundColor: "#ddd",
+                            textColor: "blue"
+                        };
+                },
+                data: tableData
+            });
+
+            // Finalize the PDF
+            invoicePdfDoc.end();
+        })
+        .catch((err) => {
+            throw next(err);
+        });
 };
 
 // Access to "create-oerder" page using "POST" method
@@ -168,7 +280,12 @@ export const postOrder = (req, res, next) => {
             );
             res.redirect("/orders");
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 // Access to "checkout" page using "GET" method

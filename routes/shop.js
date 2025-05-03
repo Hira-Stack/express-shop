@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as shopController from "../controller/shop.js";
+import { isAuthenticated } from "../middleware/is-auth.js";
 
 const router = Router();
 
@@ -14,19 +15,26 @@ router.get("/products", shopController.getProducts);
 router.get("/products/:productID", shopController.getSingleProduct);
 
 // URL: "/cart" => GET
-router.get("/cart", shopController.getCart);
+router.get("/cart", isAuthenticated, shopController.getCart);
 
 // URL: "/cart" => POST
-router.post("/cart", shopController.postCart);
+router.post("/cart", isAuthenticated, shopController.postCart);
 
 // URL: "/cart-delete-product" => POST
-router.post("/cart-delete-product", shopController.postDeleteCartItem);
+router.post(
+    "/cart-delete-product",
+    isAuthenticated,
+    shopController.postDeleteCartItem
+);
 
 // URL: "/orders" => GET
-router.get("/orders", shopController.getOrders);
+router.get("/orders", isAuthenticated, shopController.getOrders);
+
+// URL: "/orders/:orderId" => GET
+router.get("/orders/:orderId", isAuthenticated, shopController.getOrderInvoice);
 
 // URL: "/create-order" => POST
-router.post("/create-order", shopController.postOrder);
+router.post("/create-order", isAuthenticated, shopController.postOrder);
 
 // URL: "/checkout" => GET
 // router.get("/checkout", shopController.getCheckout);

@@ -1,0 +1,44 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <main>
+        <div>
+            <% if (flashMessage) { %>
+                <div class="user-message user-message--error"><%= flashMessage %></div>
+            <% } %>
+        </div>
+        <form class="signup-form" action="/signup" method="post" novalidate>
+            <div class="form-control">
+                <label for="username">User Name</label>
+                <input
+                    class="<%= validationErrors.find((err) => err.path==='username') ? 'invalid' : '' %>"
+                    type="text" name="username" id="username" value="<%= previousInputs.name %>">
+            </div>
+            <div class="form-control">
+                <label for="email">E-Mail</label>
+                <input
+                    class="<%= validationErrors.find((err) => err.path==='email') ? 'invalid' : '' %>"
+                    type="email" name="email" id="email" value="<%= previousInputs.email %>">
+            </div>
+            <div class="form-control">
+                <label for="password">Password</label>
+                <input
+                    class="<%= validationErrors.find((err) => err.path==='password') ? 'invalid' : '' %>"
+                    type="password" name="password" id="password">
+            </div>
+            <div class="form-control">
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                    class="<%= validationErrors.find((err) => err.path==='confirmPassword') ? 'invalid' : '' %>"
+                    type="password" name="confirmPassword" id="confirmPassword">
+            </div>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn" type="submit">Sign Up</button>
+        </form>
+    </main>
+    <%- include('../includes/end.ejs') %>

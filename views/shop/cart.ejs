@@ -11,6 +11,7 @@
                         <li>item Price: $<%= (item.product.price * item.quantity).toFixed(2) %></li>
                         <form action="/cart-delete-product" method="post">
                             <input type="hidden" name="productID" value="<%= item.product._id %>">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button type="submit" class="btn">Delete Item</button>
                         </form>
                         <br /><br />
@@ -20,6 +21,7 @@
                 <div>Total Price: $<%= totalPrice %></div>
                 <div class="centered">
                     <form action="/create-order" method="post">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn" type="submit">Order Now</button>
                     </form>
                 </div>
