@@ -8,27 +8,66 @@ import Product from "../models/product.js";
 import Order from "../models/order.js";
 import { rootDir } from "../util/paths.js";
 
+// Maximum number of item that should be shown on each page
+const MAX_ITEMS_PER_PAGE = 3;
+
 // Access to "shop" page using "GET" method
 export const getShopIndex = (req, res, next) => {
+    const page = +req.query.page || 1;
+    let totalProductItems = 0;
+
     Product.find()
+        .countDocuments()
+        .then((numberOfProducts) => {
+            totalProductItems = numberOfProducts;
+
+            return Product.find()
+                .skip((page - 1) * MAX_ITEMS_PER_PAGE)
+                .limit(MAX_ITEMS_PER_PAGE);
+        })
         .then((products) => {
             res.render("./shop/index", {
                 products: products,
                 pageTitle: "Shop",
-                path: "/"
+                path: "/",
+                totalProducts: totalProductItems,
+                hasPreviousPage: page > 1,
+                hasNextPage: MAX_ITEMS_PER_PAGE * page < totalProductItems,
+                previousPage: page - 1,
+                currentPage: page,
+                nextPage: page + 1,
+                lastPage: Math.ceil(totalProductItems / MAX_ITEMS_PER_PAGE)
             });
         })
-        .catch((err) => console.error(err));
+        .catch((err) => next(new Error(err)));
 };
 
 // Access to "products" page using "GET" method
 export const getProducts = (req, res, next) => {
+    const page = +req.query.page || 1;
+    let totalProductItems = 0;
+
     Product.find()
+        .countDocuments()
+        .then((numberOfProducts) => {
+            totalProductItems = numberOfProducts;
+
+            return Product.find()
+                .skip((page - 1) * MAX_ITEMS_PER_PAGE)
+                .limit(MAX_ITEMS_PER_PAGE);
+        })
         .then((products) => {
             res.render("./shop/product-list", {
                 products: products,
                 pageTitle: "All Products",
-                path: "/products"
+                path: "/products",
+                totalProducts: totalProductItems,
+                hasPreviousPage: page > 1,
+                hasNextPage: MAX_ITEMS_PER_PAGE * page < totalProductItems,
+                previousPage: page - 1,
+                currentPage: page,
+                nextPage: page + 1,
+                lastPage: Math.ceil(totalProductItems / MAX_ITEMS_PER_PAGE)
             });
         })
         .catch((err) => {
@@ -75,6 +114,9 @@ export const getCart = (req, res, next) => {
         .catch((err) => {
             // What is status code?
             console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            next(error);
         });
 };
 
@@ -93,6 +135,7 @@ export const postCart = (req, res, next) => {
             // Update total price of user's cart
             cartItems.forEach((item) => {
                 totalPrice += item.quantity * item.product.price;
+                totalPrice = +totalPrice.toFixed(2);
             });
 
             return User.updateOne(
@@ -288,10 +331,24 @@ export const postOrder = (req, res, next) => {
         });
 };
 
-// Access to "checkout" page using "GET" method
-// export const getCheckout = (req, res, next) => {
-//     res.render("./shop/checkout", {
-//         pageTitle: "Checkout Info",
-//         path: "/checkout"
-//     });
-// };
+// Access to "checkout/:orderId" page using "GET" method
+export const getCheckout = (req, res, next) => {
+    const orderID = req.params.orderId;
+    Order.findById(orderID)
+        .populate("user", "_id name email")
+        .then((order) => {
+            const user = order.user;
+            res.render("./shop/checkout", {
+                pageTitle: "Checkout Info",
+                path: "/checkout",
+                order: order,
+                user: user
+            });
+        })
+        .catch((err) => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            next(error);
+        });
+};

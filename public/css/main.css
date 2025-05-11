@@ -247,6 +247,32 @@ form {
   background: rgb(255, 176, 176);
   color: red;
 }
+.pagination {
+  max-width: 720px;
+  margin: 2rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.pagination a {
+  font-size: larger;
+  color: #00695c;
+  width: 2rem;
+  height: 2rem;
+  display: block;
+  text-decoration: none;
+  text-align: center;
+  border: 2px solid #00695c;
+}
+
+.pagination a:hover,
+.pagination a:active,
+.pagination a.active {
+  background-color: #00695c;
+  color: #FFFFFF;
+}
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;
@@ -255,7 +281,8 @@ form {
   #side-menu-toggle {
     display: none;
   }
-.user-message {
-  width: 30rem;
-}
+
+                .user-message {
+                  width: 30rem;
+                }
 }

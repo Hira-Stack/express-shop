@@ -13,6 +13,7 @@
                             <li><%= item.product.title %> (<%= item.quantity %>)</li>
                         <% }); %>
                         <p>Oreder total price: $<%= order.totalPrice %></p>
+                        <a class="btn" href="/checkout/<%= order._id %>">Go To Payment</a>
                         <a class="btn" href="/orders/<%= order._id %>" target="_blank">Order's Invoice</a>
                     <% }) %>
                 </ul>

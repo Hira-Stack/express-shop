@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import url from "url";
 
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";

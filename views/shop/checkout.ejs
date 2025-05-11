@@ -1,0 +1,16 @@
+<%- include('../includes/head.ejs') %>
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <main>
+            <h2>Order ID: <%= order._id %></h2>
+            <div class="user-info">
+                <h3>User name: <%= user.name %></h3>
+                <h3>User E-mail: <%= user.email %></h3>
+            </div>
+            <div>-------------------------------------</div>
+            <p>Payment price: $<%= order.totalPrice %></p>
+            <button class="btn">Pay Order Price</button>
+        </main>
+        <%- include('../includes/end.ejs') %>

@@ -29,17 +29,28 @@
                                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                         <button class="btn" name="edit" value="true" type="submit">Edit</button>
                                     </form>
-                                    <form action="/admin/delete-product" method="post">
-                                        <input type="hidden" name="productID" value= "<%= product._id %>">
-                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                        <button class="btn" name="delete" value="true" type="submit">Delete</button>
-                                    </form>
+                                    <!-- <form action="/admin/delete-product" method="post"> -->
+                                    <input type="hidden" name="productID" value= "<%= product._id %>">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button class="btn" name="delete" value="true" type="submit" onclick="deleteProduct(this)">Delete</button>
+                                    <!-- </form> -->
                                 </div>
                             </article>
                         <% } %>
                     </div>
+                    <%- include("../includes/pagination.ejs", {
+                            totalProducts,
+                            hasPreviousPage,
+                            hasNextPage,
+                            previousPage,
+                            currentPage,
+                            nextPage,
+                            lastPage
+                        })
+                    %>
                 <% } else { %>
                     <h1>No Product Found!</h1>
                 <% } %>
             </main>
             <%- include('../includes/end.ejs') %>
+            <script src="/js/admin.js"></script>

@@ -37,6 +37,6 @@ router.get("/orders/:orderId", isAuthenticated, shopController.getOrderInvoice);
 router.post("/create-order", isAuthenticated, shopController.postOrder);
 
 // URL: "/checkout" => GET
-// router.get("/checkout", shopController.getCheckout);
+router.get("/checkout/:orderId", isAuthenticated, shopController.getCheckout);
 
 export default router;

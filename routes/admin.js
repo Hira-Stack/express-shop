@@ -38,11 +38,11 @@ router.post(
     adminController.postEditProduct
 );
 
-// URL: "/admin/delete-product" => POST
-router.post(
-    "/delete-product",
+// URL: "/admin/product/:productID" => DELETE
+router.delete(
+    "/product/:productID",
     isAuthenticated,
-    adminController.postDeleteProduct
+    adminController.deleteProduct
 );
 
 // URL: "/admin/products" => GET

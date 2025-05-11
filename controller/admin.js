@@ -2,7 +2,9 @@ import { validationResult } from "express-validator";
 
 import Product from "../models/product.js";
 import { removeFile } from "../util/files.js";
-// import { get500 } from "./errors.js";
+
+// Maximum number of item that should be shown on each page
+const MAX_ITEMS_PER_PAGE = 3;
 
 // Access to "Add Product" page using "GET" method and "/admin/add-product" url
 export const getAddProduct = (req, res, next) => {
@@ -165,39 +167,59 @@ export const postEditProduct = (req, res, next) => {
 };
 
 // Access to "Delete Product" page using "GET" method and "/admin/delete-product" url
-export const postDeleteProduct = (req, res, next) => {
-    const productID = req.body.productID;
+export const deleteProduct = (req, res, next) => {
+    const productID = req.params.productID;
     const userID = req.user._id;
 
     Product.findOneAndDelete({ _id: productID, userId: userID })
-        .then((result) => {
-            let previousImageUrl = result.imageUrl;
+        .then((product) => {
+            if (!product) {
+                return next(new Error("Product not found!"));
+            }
+            let previousImageUrl = product.imageUrl;
             previousImageUrl = previousImageUrl.split("\\");
             const directoryPath = previousImageUrl[0];
             const fileName = previousImageUrl[1];
 
-            res.redirect("/admin/products");
+            // res.redirect("/admin/products");
+            res.status(200).json({ message: "Success msg." });
 
             // Remove previous product's image file
             removeFile(directoryPath, fileName);
         })
         .catch((err) => {
-            console.log(err);
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
+            res.status(500).json({ message: "Delete product failed!" });
+            // res.status(500).json({ message: err.message });
         });
 };
 
 // Access to "products" page using "GET" method and "/admin/products" url
 export const getAdminProducts = (req, res, next) => {
     const userID = req.user._id;
+    const page = +req.query.page || 1;
+    let totalProductItems = 0;
+
     Product.find({ userId: userID })
+        .countDocuments()
+        .then((numberOfProducts) => {
+            totalProductItems = numberOfProducts;
+
+            return Product.find({ userId: userID })
+                .skip((page - 1) * MAX_ITEMS_PER_PAGE)
+                .limit(MAX_ITEMS_PER_PAGE);
+        })
         .then((products) => {
             res.render("./admin/products", {
                 products: products,
                 pageTitle: "Admin Products",
-                path: "/admin/products"
+                path: "/admin/products",
+                totalProducts: totalProductItems,
+                hasPreviousPage: page > 1,
+                hasNextPage: MAX_ITEMS_PER_PAGE * page < totalProductItems,
+                previousPage: page - 1,
+                currentPage: page,
+                nextPage: page + 1,
+                lastPage: Math.ceil(totalProductItems / MAX_ITEMS_PER_PAGE)
             });
         })
         .catch((err) => {
